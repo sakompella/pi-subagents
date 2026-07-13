@@ -5,6 +5,8 @@ import type { ExtensionConfig } from "../shared/types.ts";
 const LOADER_TOOL_NAME = "search_tools";
 const DEFERRED_TOOL_NAMES = ["subagent", "wait"] as const;
 
+type ToolResultEventLike = { toolName?: unknown; isError?: unknown };
+
 const SearchToolsParams = Type.Object({
 	query: Type.String({ description: "Capability or task to search for" }),
 	limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 2 })),
@@ -77,8 +79,34 @@ export function registerNativeToolLoader(pi: ExtensionAPI, config: ExtensionConf
 	pi.registerTool(loader);
 }
 
-export function activateNativeToolLoader(pi: ExtensionAPI, config: ExtensionConfig): void {
+export function isSuccessfulSubagentResult(event: ToolResultEventLike): boolean {
+	return event.toolName === "subagent" && event.isError === false;
+}
+
+function nativeNamesSet(nativeToolNames: Iterable<string>): Set<string> {
+	return new Set(nativeToolNames);
+}
+
+export function activateNativeToolLoader(
+	pi: ExtensionAPI,
+	config: ExtensionConfig,
+	nativeToolNames: Iterable<string> = [],
+): void {
 	if (!isEnabled(config)) return;
-	const active = pi.getActiveTools().filter((name) => !DEFERRED_TOOL_NAMES.includes(name as (typeof DEFERRED_TOOL_NAMES)[number]));
+	const nativeNames = nativeNamesSet(nativeToolNames);
+	const active = pi.getActiveTools().filter((name) =>
+		!DEFERRED_TOOL_NAMES.includes(name as (typeof DEFERRED_TOOL_NAMES)[number]) && !nativeNames.has(name),
+	);
 	pi.setActiveTools([...new Set([...active, LOADER_TOOL_NAME])]);
+}
+
+export function activateNativeSupervisorTools(
+	pi: ExtensionAPI,
+	config: ExtensionConfig,
+	nativeToolNames: Iterable<string>,
+): void {
+	if (!isEnabled(config)) return;
+	const active = pi.getActiveTools();
+	const added = [...new Set(nativeToolNames)].filter((name) => !active.includes(name));
+	if (added.length > 0) pi.setActiveTools([...new Set([...active, ...added])]);
 }

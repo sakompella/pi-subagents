@@ -43,7 +43,12 @@ import { SUBAGENT_CHILD_ENV, SUBAGENT_PARENT_SESSION_ENV } from "../runs/shared/
 import { formatDuration, shortenPath } from "../shared/formatters.ts";
 import { loadConfig } from "./config.ts";
 import { buildSubagentToolDescription } from "./tool-description.ts";
-import { activateNativeToolLoader, registerNativeToolLoader } from "./tool-loading.ts";
+import {
+	activateNativeSupervisorTools,
+	activateNativeToolLoader,
+	isSuccessfulSubagentResult,
+	registerNativeToolLoader,
+} from "./tool-loading.ts";
 import {
 	type Details,
 	type SubagentState,
@@ -287,6 +292,7 @@ export default function registerSubagentExtension(pi: ExtensionAPI): void {
 	};
 
 	const supervisorChannel = createNativeSupervisorChannel(pi, state);
+	let nativeSupervisorToolsActivated = false;
 	const mainWatchdog = registerMainWatchdog(pi);
 	const { startResultWatcher, primeExistingResults, stopResultWatcher } = createResultWatcher(
 		pi,
@@ -569,6 +575,10 @@ wait also returns when a run needs attention (a child that went idle or blocked 
 	globalStore[eventUnsubscribeStoreKey] = eventUnsubscribes;
 
 	pi.on("tool_result", (event, ctx) => {
+		if (isSuccessfulSubagentResult(event) && !nativeSupervisorToolsActivated) {
+			activateNativeSupervisorTools(pi, config, supervisorChannel.nativeToolNames);
+			nativeSupervisorToolsActivated = true;
+		}
 		if (event.toolName !== "subagent") return;
 		if (!ctx.hasUI) return;
 		state.lastUiContext = ctx;
@@ -593,6 +603,7 @@ wait also returns when a run needs attention (a child that went idle or blocked 
 	const resetSessionState = (ctx: ExtensionContext) => {
 		state.baseCwd = ctx.cwd;
 		state.currentSessionId = resolveCurrentSessionId(ctx.sessionManager);
+		nativeSupervisorToolsActivated = false;
 		state.subagentSpawns = { sessionId: state.currentSessionId, count: 0 };
 		// Set PI_SUBAGENT_PARENT_SESSION for permission-system forwarding.
 		// Only set in the root session (the interactive UI session), not in
@@ -619,7 +630,7 @@ wait also returns when a run needs attention (a child that went idle or blocked 
 		resetSessionState(ctx);
 		rpcBridge.emitReady(ctx);
 		supervisorChannel.start();
-		activateNativeToolLoader(pi, config);
+		activateNativeToolLoader(pi, config, supervisorChannel.nativeToolNames);
 	});
 
 	pi.on("session_shutdown", () => {

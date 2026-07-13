@@ -137,6 +137,7 @@ describe("native supervisor channel", () => {
 		channel.dispose();
 
 		assert.deepEqual(registeredTools, [NATIVE_SUPERVISOR_TOOL_NAME, "intercom"]);
+		assert.deepEqual([...channel.nativeToolNames], [NATIVE_SUPERVISOR_TOOL_NAME, "intercom"]);
 		assert.deepEqual(sent.map((message) => message.details?.id), [matchingId]);
 		assert.equal(channel.pending.has(matchingId), false, "disposed channel clears pending requests");
 		assert.equal(sent.some((message) => message.details?.id === otherId), false);
@@ -300,6 +301,7 @@ describe("native supervisor channel", () => {
 			channel.start();
 
 			assert.deepEqual([...registeredTools.keys()], [NATIVE_SUPERVISOR_TOOL_NAME]);
+			assert.deepEqual([...channel.nativeToolNames], [NATIVE_SUPERVISOR_TOOL_NAME], "external intercom is not native provenance");
 			await registeredTools.get(NATIVE_SUPERVISOR_TOOL_NAME)?.execute("reply", { action: "reply", replyTo: requestId, message: "Approved" });
 			const reply = JSON.parse(fs.readFileSync(replyFile(runId, requestId), "utf-8")) as { message?: string; requestId?: string };
 			assert.equal(reply.requestId, requestId);
