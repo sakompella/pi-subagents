@@ -43,6 +43,7 @@ import { SUBAGENT_CHILD_ENV, SUBAGENT_PARENT_SESSION_ENV } from "../runs/shared/
 import { formatDuration, shortenPath } from "../shared/formatters.ts";
 import { loadConfig } from "./config.ts";
 import { buildSubagentToolDescription } from "./tool-description.ts";
+import { activateNativeToolLoader, registerNativeToolLoader } from "./tool-loading.ts";
 import {
 	type Details,
 	type SubagentState,
@@ -529,6 +530,7 @@ wait also returns when a run needs attention (a child that went idle or blocked 
 		},
 	};
 	pi.registerTool(waitTool);
+	registerNativeToolLoader(pi, config);
 
 	registerSlashCommands(pi, state);
 
@@ -617,6 +619,7 @@ wait also returns when a run needs attention (a child that went idle or blocked 
 		resetSessionState(ctx);
 		rpcBridge.emitReady(ctx);
 		supervisorChannel.start();
+		activateNativeToolLoader(pi, config);
 	});
 
 	pi.on("session_shutdown", () => {

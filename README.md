@@ -1219,6 +1219,14 @@ Controls the parent-facing `subagent` tool description registered at startup. `f
 
 Makes top-level calls use background execution when the request does not explicitly set `async`. Callers can still force foreground with `async: false` unless `forceTopLevelAsync` is enabled.
 
+### `toolLoading`
+
+```json
+{ "toolLoading": { "enabled": true } }
+```
+
+Opt in to Pi-native deferred loading for `subagent` and `wait`. The extension keeps a stable `search_tools` loader active, hides those two tools at session start, and adds matching tools without removing active tools. Searching for delegation loads both `subagent` and `wait`, so an async run can always be awaited. On models with native deferred loading, Pi adds the tool definitions at the search-result position and preserves the existing prompt prefix; other models receive Pi's normal active-tool fallback. The default is disabled for backward compatibility.
+
 ### `waitTool`
 
 ```json

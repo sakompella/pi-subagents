@@ -1024,12 +1024,18 @@ export interface ScheduledRunsConfig {
 	maxPending?: number;
 }
 
+export interface ToolLoadingConfig {
+	/** Enable Pi-native deferred loading for pi-subagents tools. Defaults to false. */
+	enabled?: boolean;
+}
+
 export interface ExtensionConfig {
 	asyncByDefault?: boolean;
 	/** Tool description variant registered for the parent-facing subagent tool. Defaults to full. */
 	toolDescriptionMode?: ToolDescriptionMode;
 	forceTopLevelAsync?: boolean;
 	waitTool?: WaitToolConfig;
+	toolLoading?: ToolLoadingConfig;
 	defaultSessionDir?: string;
 	singleRunOutputBaseDir?: string;
 	maxSubagentDepth?: number;
