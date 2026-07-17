@@ -590,15 +590,28 @@ function buildParentIntercomTool(pending: Map<string, PendingSupervisorRequest>,
 	};
 }
 
-export function createNativeSupervisorChannel(pi: ExtensionAPI, state: SubagentState): { start: () => void; dispose: () => void; pending: Map<string, PendingSupervisorRequest> } {
+export function createNativeSupervisorChannel(pi: ExtensionAPI, state: SubagentState): {
+	start: () => void;
+	dispose: () => void;
+	pending: Map<string, PendingSupervisorRequest>;
+	/** Parent-side tools registered by pi-subagents, excluding external tools. */
+	nativeToolNames: ReadonlySet<string>;
+} {
 	const pending = new Map<string, PendingSupervisorRequest>();
+	const nativeToolNames = new Set<string>();
 	const seenFiles = new Set<string>();
 	let poller: ReturnType<typeof setInterval> | undefined;
 	let lastStaleCleanupAt = 0;
 
 	const registerParentTools = (): void => {
-		if (!hasTool(pi, NATIVE_SUPERVISOR_TOOL_NAME)) pi.registerTool(buildParentIntercomTool(pending, state, NATIVE_SUPERVISOR_TOOL_NAME));
-		if (!hasTool(pi, "intercom")) pi.registerTool(buildParentIntercomTool(pending, state));
+		if (!hasTool(pi, NATIVE_SUPERVISOR_TOOL_NAME)) {
+			pi.registerTool(buildParentIntercomTool(pending, state, NATIVE_SUPERVISOR_TOOL_NAME));
+			nativeToolNames.add(NATIVE_SUPERVISOR_TOOL_NAME);
+		}
+		if (!hasTool(pi, "intercom")) {
+			pi.registerTool(buildParentIntercomTool(pending, state));
+			nativeToolNames.add("intercom");
+		}
 	};
 
 	const cleanupStaleChannelsIfDue = (): void => {
@@ -672,5 +685,6 @@ export function createNativeSupervisorChannel(pi: ExtensionAPI, state: SubagentS
 			seenFiles.clear();
 		},
 		pending,
+		nativeToolNames,
 	};
 }

@@ -300,6 +300,7 @@ describe("native supervisor channel", () => {
 			channel.start();
 
 			assert.deepEqual([...registeredTools.keys()], [NATIVE_SUPERVISOR_TOOL_NAME]);
+			assert.deepEqual([...channel.nativeToolNames], [NATIVE_SUPERVISOR_TOOL_NAME]);
 			await registeredTools.get(NATIVE_SUPERVISOR_TOOL_NAME)?.execute("reply", { action: "reply", replyTo: requestId, message: "Approved" });
 			const reply = JSON.parse(fs.readFileSync(replyFile(runId, requestId), "utf-8")) as { message?: string; requestId?: string };
 			assert.equal(reply.requestId, requestId);

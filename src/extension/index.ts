@@ -47,6 +47,7 @@ import { SUBAGENT_CHILD_ENV, SUBAGENT_PARENT_SESSION_ENV } from "../runs/shared/
 import { formatDuration, shortenPath } from "../shared/formatters.ts";
 import { loadConfig } from "./config.ts";
 import { buildSubagentToolDescription } from "./tool-description.ts";
+import { activateToolsAfterSubagentResult, configureEventDrivenToolActivation } from "./tool-loading.ts";
 import {
 	type Details,
 	type SubagentState,
@@ -518,6 +519,7 @@ export default function registerSubagentExtension(pi: ExtensionAPI): void {
 	globalStore[eventUnsubscribeStoreKey] = eventUnsubscribes;
 
 	pi.on("tool_result", (event, ctx) => {
+		activateToolsAfterSubagentResult(pi, config, event, supervisorChannel.nativeToolNames);
 		if (event.toolName !== "subagent") return;
 		if (!ctx.hasUI) return;
 		state.lastUiContext = ctx;
@@ -567,6 +569,7 @@ export default function registerSubagentExtension(pi: ExtensionAPI): void {
 		resetSessionState(ctx);
 		rpcBridge.emitReady(ctx);
 		supervisorChannel.start();
+		configureEventDrivenToolActivation(pi, config, supervisorChannel.nativeToolNames);
 	});
 
 	pi.on("session_shutdown", () => {
