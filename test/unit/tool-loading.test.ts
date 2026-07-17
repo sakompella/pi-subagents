@@ -20,7 +20,7 @@ function makePi(initialActive: string[]) {
 	return { pi, active: () => [...active], setCalls: () => setCalls };
 }
 
-const enabled = { eventDrivenToolActivation: true };
+const enabled = { deferredToolLoading: true };
 
 function execution(mode: "single" | "parallel" | "chain", asyncId?: string) {
 	return {

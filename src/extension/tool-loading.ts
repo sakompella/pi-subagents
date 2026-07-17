@@ -16,7 +16,7 @@ function executionDetails(event: ToolResultEventLike): { mode?: unknown; asyncId
 }
 
 function isEnabled(config: ExtensionConfig): boolean {
-	return config.eventDrivenToolActivation === true;
+	return config.deferredToolLoading === true;
 }
 
 function isNativeToolName(name: string): boolean {

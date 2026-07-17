@@ -1153,7 +1153,7 @@ export interface ScheduledRunsConfig {
 export interface ExtensionConfig {
 	asyncByDefault?: boolean;
 	/** Add native supervisor controls and subagent_wait after successful execution events. Defaults to false. */
-	eventDrivenToolActivation?: boolean;
+	deferredToolLoading?: boolean;
 	/** Show the above-editor async runs widget. Defaults to true. */
 	asyncWidget?: boolean;
 	/** Tool description variant registered for the parent-facing subagent tool. Defaults to full. */

@@ -1301,10 +1301,10 @@ Controls the parent-facing `subagent` tool description registered at startup. `f
 
 Makes top-level calls use background execution when the request does not explicitly set `async`. Callers can still force foreground with `async: false` unless `forceTopLevelAsync` is enabled.
 
-### `eventDrivenToolActivation`
+### `deferredToolLoading`
 
 ```json
-{ "eventDrivenToolActivation": true }
+{ "deferredToolLoading": true }
 ```
 
 Opt in to event-driven native tool activation. `subagent` stays active, while native `subagent_supervisor` and pi-subagents' fallback `intercom` are activated additively after a successful real single, parallel, or chain execution. `subagent_wait` is activated only after a successful async execution, so synchronous runs do not expose it. The default is `false`, which preserves the normal upstream tool set and activation behavior; an external `intercom` is never removed or replaced.
