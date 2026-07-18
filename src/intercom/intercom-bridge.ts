@@ -25,7 +25,7 @@ Use contact_supervisor first. It resolves the supervisor session "{orchestratorT
 - After contact_supervisor with reason "need_decision" or "interview_request", stay alive and continue only after the reply arrives. Do not finish your final response with a choose-one question.
 - Do not ask for clarification when the only conflict is review-only/no-edit versus progress-writing or artifact-writing instructions. If an output path is configured but no write-capable tool is available, return the complete artifact in your final response; the runtime will persist it. Do not contact the supervisor merely because you cannot write that output path directly.
 - Meaningful progress or unexpected discoveries that change the plan: contact_supervisor({ reason: "progress_update", message: "UPDATE: <summary>" })
-- Generic intercom is lower-level plumbing/fallback only: intercom({ action: "ask", to: "{orchestratorTarget}", message: "<question>" })
+- If generic intercom is explicitly available in your tool allowlist, it is lower-level fallback plumbing: intercom({ action: "ask", to: "{orchestratorTarget}", message: "<question>" })
 
 Do not use contact_supervisor or intercom for routine completion handoffs. If no coordination is needed, return a focused task result.`;
 
@@ -160,7 +160,7 @@ export function resolveIntercomBridge(input: ResolveIntercomBridgeInput): Interc
 export function applyIntercomBridgeToAgent(agent: AgentConfig, bridge: IntercomBridgeState): AgentConfig {
 	if (!bridge.active || !bridge.orchestratorTarget) return agent;
 
-	const bridgeTools = ["intercom", "contact_supervisor"];
+	const bridgeTools = ["contact_supervisor"];
 	const tools = agent.tools
 		? [...agent.tools, ...bridgeTools.filter((tool) => !agent.tools?.includes(tool))]
 		: agent.tools;
